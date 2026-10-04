@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "FinNews AI – Financial News Simplifier"
+description = "A beginner-friendly financial news reader for college students, with searchable categories and AI-generated plain-language explainers."
+version = "1.0.0"
+id = "artifacts/finnews-ai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25878
+
+[services.development]
+run = "pnpm --filter @workspace/finnews-ai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/finnews-ai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/finnews-ai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25878"
+BASE_PATH = "/"

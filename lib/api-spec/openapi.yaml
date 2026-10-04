@@ -1,0 +1,191 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: news
+    description: Financial and business news
+  - name: simplification
+    description: Beginner-friendly article explanations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /news:
+    get:
+      operationId: getNews
+      tags: [news]
+      summary: Get financial and business news
+      description: Returns filtered live headlines when NewsAPI is configured, otherwise sample demo headlines.
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [All, "Stock Market", Economy, Business, Banking, Technology]
+            default: All
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 120
+      responses:
+        "200":
+          description: A list of financial news stories
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsListResponse"
+        "502":
+          description: The configured news provider could not return headlines
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /news/simplify:
+    post:
+      operationId: simplifyArticle
+      tags: [simplification]
+      summary: Explain a financial news article in plain language
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArticleSimplificationInput"
+      responses:
+        "200":
+          description: Beginner-friendly article explanation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArticleSimplification"
+        "400":
+          description: Article details are invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "502":
+          description: The configured AI provider could not generate an explanation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    NewsArticle:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        source:
+          type: string
+        publishedAt:
+          type: string
+          format: date-time
+        description:
+          type: string
+        content:
+          type: ["string", "null"]
+        url:
+          type: string
+          format: uri
+        imageUrl:
+          type: ["string", "null"]
+        category:
+          type: string
+          enum: ["Stock Market", Economy, Business, Banking, Technology]
+      required: [id, title, source, publishedAt, description, content, url, imageUrl, category]
+    NewsListResponse:
+      type: object
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsArticle"
+        sourceMode:
+          type: string
+          enum: [newsapi, demo]
+        totalResults:
+          type: integer
+      required: [articles, sourceMode, totalResults]
+    ArticleSimplificationInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+        source:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 3000
+        content:
+          type: ["string", "null"]
+          maxLength: 6000
+      required: [title, source, description, content]
+    FinancialTerm:
+      type: object
+      properties:
+        term:
+          type: string
+        definition:
+          type: string
+      required: [term, definition]
+    ArticleSimplification:
+      type: object
+      properties:
+        summary:
+          type: string
+        keyPoints:
+          type: array
+          items:
+            type: string
+        terms:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancialTerm"
+        whyItMatters:
+          type: string
+        modelMode:
+          type: string
+          enum: [groq, demo]
+      required: [summary, keyPoints, terms, whyItMatters, modelMode]
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
