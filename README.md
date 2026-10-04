@@ -10,6 +10,7 @@ To enable live providers in Replit, add these in **Tools → Secrets**:
 
 - `NEWSAPI_KEY` — fetch live financial and business headlines from NewsAPI.
 - `GROQ_API_KEY` — generate article explanations with Groq Llama 3.3 70B.
+- https://fin-news-ai--aman8051.replit.app
 
 These are server-side secrets. Do not expose them through `VITE_` variables or commit them in an `.env` file.
 
